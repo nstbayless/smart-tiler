@@ -18,7 +18,7 @@ def extract(img,grid_w,grid_h, tile_list_begin = []):
   
   matrix = [[0 for y in range(img.size[1]//grid_h)] for x in range(img.size[0]//grid_w)]
   
-  #0 tile
+  # the 0 tile
   tilenums[()] = 0
   tiles_s.add(())
   tiles.append(())
@@ -31,10 +31,17 @@ def extract(img,grid_w,grid_h, tile_list_begin = []):
   
   counts = collections.defaultdict(int)
   
+  # blank comparator
+  blankimg = PIL.Image.new('RGB', (grid_w, grid_h))
+  blanktup = tuple(list(blankimg.getdata()))
+  
+  # determine tiles in image
   for x in range(0,img.size[0]//grid_w):
     for y in range(0,img.size[1]//grid_h):
       subimg = img.crop((x*grid_w, y*grid_h, (x+1)*grid_w, (y+1)*grid_h))
       tile = tuple(list(subimg.getdata()))
+      if tile == blanktup:
+        tile = ()
       if not tile in tiles_s:
         tilenums[tile] = len(tiles)
         tiles_s.add(tile)
