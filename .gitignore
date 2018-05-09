@@ -1,0 +1,5 @@
+out.png
+*.room.gmx
+demo/*
+__pycache__
+*.pyc
