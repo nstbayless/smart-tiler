@@ -23,9 +23,12 @@ parser.add_argument("-e", "--extract", help = "extract tileset to (.png)", defau
 parser.add_argument("-n", "--resource-name", help = "name of the background resource in Game Maker, e.g. \"tstMM2Wily1\"", default="")
 parser.add_argument("-tw", "--width", type=int, help = "width of grid", default=16)
 parser.add_argument("-th", "--height", type = int, help = "height of grid", default=16)
-parser.add_argument("-s","--strategy", help = "what strategy to use for arranging tileset (when extracting)",default = "greedy",choices = ["dumb", "greedy", "mlp", "z3"])
-parser.add_argument("-r","--rubric", help = "What style of scoring to use for arranging tileset (when extracting)",default = "linear",choices = ["linear","normal","sqrtnormal","sqrnormal"])
-parser.add_argument("--trials", type=int, help = "number of times to repeat arrangement method (when extracting)", default=1)
+parser.add_argument("-s","--strategy", help = "what strategy to use for arranging",default = "gibbs-swap-flood-block",choices = ["dumb", "greedy", "gibbs", "gibbs-swap", "gibbs-swap-block", "gibbs-swap-flood-block"])
+parser.add_argument("-r","--rubric", help = "What style of scoring to use",default = "linear",choices = ["linear","normal","sqrtnormal","sqrnormal"])
+parser.add_argument("--trials", type=int, help = "number of times to repeat method", default=1)
+parser.add_argument("--animate", help = "animate gibbs sampling?", action='store_true')
+parser.add_argument("--temperature","--temp", type=float, help = "gibbs sampling inverse temperature", default = -1)
+parser.add_argument("--iterations", "--iter", "--iters", type=int,  help = "number of gibbs iterations", default = 10000)
 parser.add_argument("--error-summary", help = "show missing tiles as image", action='store_true')
 
 args = parser.parse_args()
@@ -42,8 +45,9 @@ if len(args.extract) > 0:
     if len(args.tileset) > 0:
       print("cannot use both --extract and --tileset options")
       sys.exit()
-    stitched, tiles, matrix, tile_mat = extract_to_tileset(args,args.extract)
-    tileset_width = stitched.width
+    stitched, tiles, matrix, tile_mat = extract_to_tileset(args)
+    stitched.save(args.extract)
+    tileset_width, th = stitched.size
 elif len(args.tileset) > 0:
   print("reading tileset " + args.tileset)
   img_tileset = Image.open(args.tileset).convert("RGB")
@@ -126,7 +130,7 @@ for x in range(len(matrix)):
       s += '    <tile bgName="' + args.resource_name + '" x="' + str(x*args.width) + '" y="' + str(y*args.height) + \
       '" w="' + str(args.width) + '" h="' + str(args.height) + '" xo="' + str(coord[0]) + '" yo="' + str(coord[1]) + \
       '" id="' + str(idc) + '" name="tile_' + tname + '" depth="1000000" locked="0" colour="4294967295" scaleX="1" scaleY="1"/>\n'
-      fail_summary_mat[x][y] = 255    
+      fail_summary_mat[x][y] = 255
     else:
       fail_summary_mat[x][y] = 0
 s += """  </tiles>
