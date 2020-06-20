@@ -532,6 +532,10 @@ def extract_to_tileset(args):
 
   w += 1
   h += 0
+  
+  # paranoia
+  h = int(math.ceil(h))
+  w = int(math.ceil(w))
 
   if args.trials > 1:
       print("Attempt 1")

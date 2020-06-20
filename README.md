@@ -3,6 +3,8 @@
 
 ## Tileset Arrangement
 
+This script requires python3 to be installed.
+
 basic usage:
 
 ```
